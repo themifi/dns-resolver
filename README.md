@@ -13,3 +13,4 @@ Literature I used to learn about DNS:
 - [Implement DNS in a weekend](https://implement-dns.wizardzines.com/) by Julia Evans
 - [How DNS works zine](https://wizardzines.com/zines/dns) by Julia Evans
 - [What is DNS?](https://www.cloudflare.com/learning/dns/what-is-dns/) by Cloudflare
+- [RFC 1035: DOMAIN NAMES - IMPLEMENTATION AND SPECIFICATION](https://datatracker.ietf.org/doc/html/rfc1035)
