@@ -9,7 +9,7 @@ jobs:
   release:
     name: Release Packaging
     env:
-      PROJECT_NAME_UNDERSCORE: relox
+      PROJECT_NAME_UNDERSCORE: dns-resolver
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
