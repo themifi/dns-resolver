@@ -7,7 +7,7 @@ fn main() {
         std::process::exit(1);
     }
 
-    let domain = args.skip(1).next().unwrap();
+    let domain = args.nth(1).unwrap();
     let ip = lookup_domain(domain);
     println!("IP address: {}", ip);
 }
@@ -26,8 +26,7 @@ fn lookup_domain(domain: String) -> std::net::Ipv4Addr {
     println!("Response: {:?}", packet);
     let ip_data = &packet.answers[0].data;
     let ip_bytes = [ip_data[0], ip_data[1], ip_data[2], ip_data[3]];
-    let ip = std::net::Ipv4Addr::from(ip_bytes);
-    ip
+    std::net::Ipv4Addr::from(ip_bytes)
 }
 
 fn build_query(domain_name: String, record_type: u16) -> Vec<u8> {
@@ -200,11 +199,11 @@ impl DNSRecord {
 
 #[derive(Debug)]
 struct DNSPacket {
-    header: DNSHeader,
-    questions: Vec<DNSQuestion>,
+    _header: DNSHeader,
+    _questions: Vec<DNSQuestion>,
     answers: Vec<DNSRecord>,
-    authorities: Vec<DNSRecord>,
-    additionals: Vec<DNSRecord>,
+    _authorities: Vec<DNSRecord>,
+    _additionals: Vec<DNSRecord>,
 }
 
 impl DNSPacket {
@@ -227,11 +226,11 @@ impl DNSPacket {
             additionals.push(DNSRecord::parse(reader));
         }
         DNSPacket {
-            header,
-            questions,
+            _header: header,
+            _questions: questions,
             answers,
-            authorities,
-            additionals,
+            _authorities: authorities,
+            _additionals: additionals,
         }
     }
 }
