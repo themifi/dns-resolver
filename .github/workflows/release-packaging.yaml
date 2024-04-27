@@ -8,20 +8,12 @@ name: Release Packaging
 jobs:
   release:
     name: Release Packaging
-    env:
-      PROJECT_NAME_UNDERSCORE: dns-resolver
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release
+      - uses: actions/upload-artifact@v4
         with:
-          profile: minimal
-          toolchain: stable
-          override: true
-      - name: Release Build
-        run: cargo build --release
-      - name: 'Upload Artifact'
-        uses: actions/upload-artifact@v2
-        with:
-          name: ${{ env.PROJECT_NAME_UNDERSCORE }}
-          path: target/release/${{ env.PROJECT_NAME_UNDERSCORE }}
+          name: dns-resolver
+          path: target/release/dns-resolver
