@@ -3,7 +3,7 @@ use rand::prelude::*;
 fn main() {
     let mut args = std::env::args();
     if args.len() < 2 {
-        eprintln!("Usage: {} <domain>", args.next().unwrap());
+        eprintln!("Usage: {} <DOMAIN_NAME>", args.next().unwrap());
         std::process::exit(1);
     }
 
