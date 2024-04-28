@@ -1,4 +1,7 @@
 # DNS resolver
+[![Check and Lint](https://github.com/themifi/dns-resolver/actions/workflows/check-and-lint.yaml/badge.svg)](https://github.com/themifi/dns-resolver/actions/workflows/check-and-lint.yaml)
+[![Test with Code Coverage](https://github.com/themifi/dns-resolver/actions/workflows/test.yaml/badge.svg)](https://github.com/themifi/dns-resolver/actions/workflows/test.yaml)
+[![codecov](https://codecov.io/gh/themifi/dns-resolver/graph/badge.svg?token=2KTR62Z4CD)](https://codecov.io/gh/themifi/dns-resolver)
 
 A toy DNS resolver. It translates domain names to IP addresses.
 
