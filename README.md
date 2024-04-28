@@ -22,6 +22,20 @@ Example:
 IP address: 93.184.215.14
 ```
 
+# Features
+
+- Recoursive resolve domain names starting from the root nameserver.
+```
+cargo run twitter.com
+Querying 198.41.0.4 for twitter.com
+Querying 192.41.162.30 for twitter.com
+Querying 198.41.0.4 for a.r06.twtrdns.net
+Querying 192.55.83.30 for a.r06.twtrdns.net
+Querying 205.251.195.207 for a.r06.twtrdns.net
+Querying 205.251.192.179 for twitter.com
+IP address: 104.244.42.129
+```
+
 # Rationale
 
 I wanted to learn DNS and prefer to learn theory with practice. The [How DNS works zine](https://wizardzines.com/zines/dns) and the [Implement DNS in a weekend guide](https://implement-dns.wizardzines.com/) by Julia Evans allowed me to understand and play with the technology.
