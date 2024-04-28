@@ -17,8 +17,8 @@ pub fn resolve_domain(domain: String) -> std::net::Ipv4Addr {
     }
 }
 
-fn send_query(addr: std::net::Ipv4Addr, domain: &String, record_type: u16) -> DNSPacket {
-    let query = build_query(domain.clone(), record_type);
+fn send_query(addr: std::net::Ipv4Addr, domain: &str, record_type: u16) -> DNSPacket {
+    let query = build_query(domain.to_owned(), record_type);
     let sock = std::net::UdpSocket::bind("0.0.0.0:12000").unwrap();
     let socket_addr = std::net::SocketAddrV4::new(addr, 53);
     sock.send_to(&query, socket_addr).unwrap();
@@ -288,7 +288,7 @@ mod tests {
     #[test]
     fn test_build_query() {
         let bytes = build_query("www.example.com".to_string(), 1);
-        let expected = b"\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x03www\x07example\x03com\x00\x00\x01\x00\x01";
+        let expected = b"\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x03www\x07example\x03com\x00\x00\x01\x00\x01";
         let bytes_without_random_id = &bytes[2..];
         assert_eq!(bytes_without_random_id, expected);
     }
