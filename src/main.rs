@@ -1,4 +1,4 @@
-use dns_resolver::lookup_domain;
+use dns_resolver::resolve_domain;
 
 fn main() {
     let mut args = std::env::args();
@@ -8,6 +8,6 @@ fn main() {
     }
 
     let domain = args.nth(1).unwrap();
-    let ip = lookup_domain(domain);
+    let ip = resolve_domain(domain);
     println!("IP address: {}", ip);
 }

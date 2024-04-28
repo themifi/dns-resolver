@@ -1,28 +1,40 @@
 use rand::prelude::*;
 
-pub fn lookup_domain(domain: String) -> std::net::Ipv4Addr {
-    let query = build_query(domain, 1);
-    println!("Sending DNS query: {:?}", query);
+pub fn resolve_domain(domain: String) -> std::net::Ipv4Addr {
+    let mut ns_server = std::net::Ipv4Addr::new(198, 41, 0, 4);
+    loop {
+        println!("Querying {} for {}", ns_server, domain);
+        let packet = send_query(ns_server, &domain, 1);
+        if let Some(ip) = packet.get_ip() {
+            return ip;
+        } else if let Some(ns_ip) = packet.get_nameserver_ip() {
+            ns_server = ns_ip;
+        } else if let Some(ns_domain) = packet.get_nameserver() {
+            ns_server = resolve_domain(ns_domain);
+        } else {
+            panic!("No IP address found for {}", domain);
+        }
+    }
+}
 
+fn send_query(addr: std::net::Ipv4Addr, domain: &String, record_type: u16) -> DNSPacket {
+    let query = build_query(domain.clone(), record_type);
     let sock = std::net::UdpSocket::bind("0.0.0.0:12000").unwrap();
-    sock.send_to(&query, "8.8.8.8:53").unwrap();
+    let socket_addr = std::net::SocketAddrV4::new(addr, 53);
+    sock.send_to(&query, socket_addr).unwrap();
     let mut response = [0; 1024];
     sock.recv(&mut response).unwrap();
 
     let mut reader = std::io::Cursor::new(&response);
-    let packet = DNSPacket::parse(&mut reader);
-    println!("Response: {:?}", packet);
-    let ip_data = &packet.answers[0].data;
-    let ip_bytes = [ip_data[0], ip_data[1], ip_data[2], ip_data[3]];
-    std::net::Ipv4Addr::from(ip_bytes)
+    DNSPacket::parse(&mut reader)
 }
 
 fn build_query(domain_name: String, record_type: u16) -> Vec<u8> {
     let id = random();
-    let recursion_desired = 1 << 8;
+    let flags = 0;
     let header = DNSHeader {
         id,
-        flags: recursion_desired,
+        flags,
         num_questions: 1,
         num_answers: 0,
         num_authorities: 0,
@@ -183,6 +195,24 @@ impl DNSRecord {
             data,
         }
     }
+
+    fn parse_ip_address(&self) -> std::net::Ipv4Addr {
+        if self.type_ != 1 {
+            panic!("not an A record");
+        }
+        if self.data.len() != 4 {
+            panic!("invalid IP address length");
+        }
+        let ip_bytes = [self.data[0], self.data[1], self.data[2], self.data[3]];
+        std::net::Ipv4Addr::from(ip_bytes)
+    }
+
+    fn parse_domain_name(&self) -> String {
+        if self.type_ != 2 {
+            panic!("not an NS record");
+        }
+        decode_dns_name(&mut std::io::Cursor::new(&self.data))
+    }
 }
 
 #[derive(Debug)]
@@ -190,8 +220,8 @@ struct DNSPacket {
     _header: DNSHeader,
     _questions: Vec<DNSQuestion>,
     answers: Vec<DNSRecord>,
-    _authorities: Vec<DNSRecord>,
-    _additionals: Vec<DNSRecord>,
+    authorities: Vec<DNSRecord>,
+    additionals: Vec<DNSRecord>,
 }
 
 impl DNSPacket {
@@ -217,9 +247,36 @@ impl DNSPacket {
             _header: header,
             _questions: questions,
             answers,
-            _authorities: authorities,
-            _additionals: additionals,
+            authorities,
+            additionals,
         }
+    }
+
+    fn get_ip(&self) -> Option<std::net::Ipv4Addr> {
+        for answer in &self.answers {
+            if answer.type_ == 1 {
+                return Some(answer.parse_ip_address());
+            }
+        }
+        None
+    }
+
+    fn get_nameserver_ip(&self) -> Option<std::net::Ipv4Addr> {
+        for answer in &self.additionals {
+            if answer.type_ == 1 {
+                return Some(answer.parse_ip_address());
+            }
+        }
+        None
+    }
+
+    fn get_nameserver(&self) -> Option<String> {
+        for answer in &self.authorities {
+            if answer.type_ == 2 {
+                return Some(answer.parse_domain_name());
+            }
+        }
+        None
     }
 }
 
