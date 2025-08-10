@@ -24,7 +24,7 @@ IP address: 93.184.215.14
 
 # Features
 
-- Recoursive resolve domain names starting from the root nameserver.
+- Recursively resolves domain names starting from the root nameserver.
 ```
 cargo run twitter.com
 Querying 198.41.0.4 for twitter.com
