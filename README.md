@@ -10,7 +10,7 @@ A toy DNS resolver. It translates domain names to IP addresses.
 Just pass a domain name as an argument.
 
 ```
-cargo run <DOMAIN_NAME>
+cargo run -- <DOMAIN_NAME>
 # or
 ./dns-resolver <DOMAIN_NAME>
 ```
