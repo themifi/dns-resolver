@@ -391,4 +391,43 @@ mod tests {
         };
         assert_eq!(record, expected);
     }
+
+    #[test]
+    fn test_parse_ip_address() {
+        let record = DNSRecord {
+            name: "example.com".to_string(),
+            type_: 1,
+            class: 1,
+            ttl: 0,
+            data: vec![1, 2, 3, 4],
+        };
+        let ip = record.parse_ip_address();
+        assert_eq!(ip, std::net::Ipv4Addr::new(1, 2, 3, 4));
+    }
+
+    #[test]
+    #[should_panic(expected = "not an A record")]
+    fn test_parse_ip_address_non_a_record_panics() {
+        let record = DNSRecord {
+            name: "example.com".to_string(),
+            type_: 2,
+            class: 1,
+            ttl: 0,
+            data: vec![1, 2, 3, 4],
+        };
+        record.parse_ip_address();
+    }
+
+    #[test]
+    #[should_panic(expected = "invalid IP address length")]
+    fn test_parse_ip_address_invalid_length_panics() {
+        let record = DNSRecord {
+            name: "example.com".to_string(),
+            type_: 1,
+            class: 1,
+            ttl: 0,
+            data: vec![1, 2, 3],
+        };
+        record.parse_ip_address();
+    }
 }
