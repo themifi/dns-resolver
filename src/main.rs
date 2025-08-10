@@ -8,6 +8,8 @@ fn main() {
     }
 
     let domain = args.nth(1).unwrap();
-    let ip = resolve_domain(domain);
-    println!("IP address: {}", ip);
+    match resolve_domain(domain) {
+        Ok(ip) => println!("IP address: {}", ip),
+        Err(e) => eprintln!("Error: {}", e),
+    }
 }
