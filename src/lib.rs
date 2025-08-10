@@ -449,4 +449,17 @@ mod tests {
         };
         assert_eq!(record, expected);
     }
+
+    #[test]
+    fn test_parse_ip_address() {
+        let record = DNSRecord {
+            name: String::new(),
+            type_: 1,
+            class: 1,
+            ttl: 0,
+            data: vec![1, 2, 3, 4],
+        };
+        let ip = record.parse_ip_address().unwrap();
+        assert_eq!(ip, std::net::Ipv4Addr::new(1, 2, 3, 4));
+    }
 }
