@@ -19,13 +19,14 @@ pub fn resolve_domain(domain: String) -> std::net::Ipv4Addr {
 
 fn send_query(addr: std::net::Ipv4Addr, domain: &str, record_type: u16) -> DNSPacket {
     let query = build_query(domain.to_owned(), record_type);
-    let sock = std::net::UdpSocket::bind("0.0.0.0:12000").unwrap();
+    let sock = std::net::UdpSocket::bind("0.0.0.0:0").unwrap();
     let socket_addr = std::net::SocketAddrV4::new(addr, 53);
-    sock.send_to(&query, socket_addr).unwrap();
+    sock.connect(socket_addr).unwrap();
+    sock.send(&query).unwrap();
     let mut response = [0; 1024];
-    sock.recv(&mut response).unwrap();
+    let size = sock.recv(&mut response).unwrap();
 
-    let mut reader = std::io::Cursor::new(&response);
+    let mut reader = std::io::Cursor::new(&response[..size]);
     DNSPacket::parse(&mut reader)
 }
 
@@ -390,5 +391,36 @@ mod tests {
             data: vec![1, 2],
         };
         assert_eq!(record, expected);
+    }
+
+    #[test]
+    fn test_send_query() {
+        use std::net::{Ipv4Addr, UdpSocket};
+        use std::thread;
+
+        let server = UdpSocket::bind((Ipv4Addr::LOCALHOST, 53)).unwrap();
+        let handle = thread::spawn(move || {
+            let mut buf = [0u8; 512];
+            let (len, src) = server.recv_from(&mut buf).unwrap();
+            let mut resp = Vec::new();
+            resp.extend_from_slice(&buf[0..2]);
+            resp.extend(&0x8180u16.to_be_bytes());
+            resp.extend(&1u16.to_be_bytes());
+            resp.extend(&1u16.to_be_bytes());
+            resp.extend(&0u16.to_be_bytes());
+            resp.extend(&0u16.to_be_bytes());
+            resp.extend_from_slice(&buf[12..len]);
+            resp.extend(&[0xC0, 0x0C]);
+            resp.extend(&1u16.to_be_bytes());
+            resp.extend(&1u16.to_be_bytes());
+            resp.extend(&0u32.to_be_bytes());
+            resp.extend(&4u16.to_be_bytes());
+            resp.extend(&[1, 2, 3, 4]);
+            server.send_to(&resp, src).unwrap();
+        });
+
+        let packet = super::send_query(Ipv4Addr::LOCALHOST, "example.com", 1);
+        assert_eq!(packet.get_ip(), Some(Ipv4Addr::new(1, 2, 3, 4)));
+        handle.join().unwrap();
     }
 }
